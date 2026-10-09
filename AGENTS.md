@@ -23,4 +23,4 @@ Go CLI (package main; stdlib + `minio-go` for S3, `x/crypto/scrypt`) managing mu
 - Never commit the built binary or real API keys.
 
 ## Commits & releases
-- Use conventional commits (`feat:`, `fix:`, `docs:`, `chore:`…): python-semantic-release derives the version from them (`semantic-release.toml`), so commit type = release type. Never hand-edit `CHANGELOG.md` or tag manually.
+- Use conventional commits (`feat:`, `fix:`, `docs:`, `chore:`…): python-semantic-release derives the version from them (`releaserc.toml`), so commit type = release type. Never hand-edit `CHANGELOG.md` or tag manually.

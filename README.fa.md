@@ -68,7 +68,7 @@ apikey list|create NAME [--days N]|rm NAME ID | orgs
 
 ## CI و انتشار
 - `.github/workflows/ci.yml`: بررسی gofmt، `go vet` و `go test -race` روی هر push به `main` و هر PR.
-- `.github/workflows/release.yml`: بعد از موفقیت CI روی `main`، ابزار python-semantic-release از روی commit های [conventional](https://www.conventionalcommits.org) نسخه را تعیین می‌کند (`feat:` مینور، `fix:`/`perf:` پچ، `feat!:` یا `BREAKING CHANGE` ماژور)، `CHANGELOG.md` را به‌روز می‌کند، تگ و GitHub Release می‌سازد؛ سپس در همان اجرا باینری‌ها ساخته و به release پیوست و wheel ها روی PyPI منتشر می‌شوند. commit های بدون نوع قابل‌انتشار (`docs:`، `chore:`، …) انتشاری ندارند. تنظیمات: `semantic-release.toml`.
+- `.github/workflows/release.yml`: بعد از موفقیت CI روی `main`، ابزار python-semantic-release از روی commit های [conventional](https://www.conventionalcommits.org) نسخه را تعیین می‌کند (`feat:` مینور، `fix:`/`perf:` پچ، `feat!:` یا `BREAKING CHANGE` ماژور)، `CHANGELOG.md` را به‌روز می‌کند، تگ و GitHub Release می‌سازد؛ سپس در همان اجرا باینری‌ها ساخته و به release پیوست و wheel ها روی PyPI منتشر می‌شوند. commit های بدون نوع قابل‌انتشار (`docs:`، `chore:`، …) انتشاری ندارند. تنظیمات: `releaserc.toml`.
 
 ## وضعیت
 مسیرها و بدنهٔ درخواست‌ها طبق مستندات Dokploy است و روی پنل واقعی تست نشده. نامطمئن‌ترین بخش‌ها: ساختار `project.all`، پورت مانیتورینگ و `/metrics`، `user.getContainerMetrics`، مسیر دعوت عضو و ورود با رمز عبور. برای بررسی از `raw NAME GET PATH` استفاده کنید. دستور `go test ./...` یک تست با سرور ساختگی اجرا می‌کند.
