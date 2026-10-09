@@ -3,7 +3,7 @@
 Go CLI (package main; stdlib + `minio-go` for S3, `x/crypto/scrypt`) managing multiple Dokploy panels. See README.md for usage.
 
 ## Layout
-- `core.go` config/crypto/http/output/flags · `services.go` projects, svc, env, deploy · `backup.go` S3 + backups · `net.go` domains, certs, traefik, alert, members · `main.go` dispatch/usage.
+- Source lives in `src/`: `core.go` config/crypto/http/output/flags · `services.go` projects, svc, env, deploy · `backup.go` S3 + backups · `net.go` domains, certs, traefik, alert, members · `main.go` dispatch/usage.
 - `Panel` + `load/save/pick`: config in `~/.config/dokploytools/panels.json`.
 - `Panel.call(method, path, body, out)`: all Dokploy requests (`/api/<path>`, `x-api-key`). GET when body is nil, else POST.
 - `cmd*` functions: one per subcommand; `each(name, fn)` fans out across panels.
@@ -15,7 +15,7 @@ Go CLI (package main; stdlib + `minio-go` for S3, `x/crypto/scrypt`) managing mu
 - Panel responses are decoded into `map[string]any` on purpose (API shape varies by Dokploy version); use `str()`/`list()` helpers.
 
 ## Verify
-- `go vet . && go test ./... && go build -o dokploytools .`
+- `go vet ./... && go test ./... && go build -o dokploytools ./src`
 - Tests use a mock server; API paths are unverified against a live panel (see README Status). Probe with `raw`.
 
 ## Gotchas

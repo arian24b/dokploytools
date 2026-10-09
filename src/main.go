@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+// version is set at release time: -ldflags "-X main.version=v1.2.3"
+var version = "dev"
+
 const usage = `dokploytools — manage multiple Dokploy panels
 
 Global: --json (machine output)  --watch SECS (repeat)   NAME omitted / "all" = every panel
@@ -108,6 +111,8 @@ func run(pos []string, f F) {
 		default:
 			die("panel add|list|edit|rm|encrypt")
 		}
+	case "version", "--version":
+		fmt.Println("dokploytools", version)
 	case "update":
 		each(arg(1), func(p Panel) error { return cmdUpdate(p, f.has("check")) })
 	case "projects":
