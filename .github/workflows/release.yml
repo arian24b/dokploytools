@@ -7,6 +7,10 @@ on:
     types:
       - completed
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and publish (e.g. v1.0.0); leave empty for a normal release run
+        required: false
 
 permissions:
   contents: write
@@ -53,14 +57,15 @@ jobs:
   # Tags pushed with GITHUB_TOKEN don't trigger other workflows, so build + publish run here.
   publish:
     needs: release
-    if: ${{ needs.release.outputs.released == 'true' }}
+    if: ${{ always() && needs.release.result == 'success' && (needs.release.outputs.released == 'true' || inputs.tag != '') }}
     runs-on: ubuntu-latest
+    environment: pypi # must match the environment name of the PyPI trusted publisher
     env:
-      TAG: ${{ needs.release.outputs.tag }}
+      TAG: ${{ inputs.tag || needs.release.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ needs.release.outputs.tag }}
+          ref: ${{ inputs.tag || needs.release.outputs.tag }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
