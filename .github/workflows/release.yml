@@ -23,6 +23,17 @@ jobs:
               -o dist/dokploytools-$os-$arch$ext ./src
           done
           (cd dist && sha256sum * > checksums.txt)
+      - name: build wheels
+        run: python3 scripts/build_wheels.py "${GITHUB_REF_NAME#v}" dist wheels
+      - name: smoke-test wheel
+        run: |
+          python3 -m venv /tmp/v && /tmp/v/bin/pip install --no-index --no-deps wheels/*manylinux_2_17_x86_64*.whl
+          /tmp/v/bin/dpt version | grep -F "$GITHUB_REF_NAME"
       - run: gh release create "$GITHUB_REF_NAME" dist/* --generate-notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: wheels
+          password: ${{ secrets.PYPI_API_TOKEN }}

@@ -71,3 +71,6 @@ Endpoint paths and bodies follow the Dokploy docs reference. Untested against a 
 ## CI & releases
 - `.github/workflows/ci.yml`: gofmt check, `go vet`, `go test -race` on every push to `main` and every PR.
 - `.github/workflows/release.yml`: push a tag (`git tag v1.2.3 && git push --tags`) to run tests, build linux/darwin (amd64, arm64) and windows binaries with the tag embedded (`dokploytools version`), and publish a GitHub release with checksums and generated notes.
+
+### PyPI
+Each release also publishes platform wheels (the Go binary + `dokploytools`/`dpt` entry points) to PyPI: `pipx install dokploytools` (or `uv tool install dokploytools`), then run `dpt`. Needs the repo secret `PYPI_API_TOKEN`; tags must be PEP 440 compatible (`v1.2.3`, not `v1.2.3-beta`). Wheels are built by `scripts/build_wheels.py` (stdlib only).

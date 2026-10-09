@@ -72,3 +72,6 @@ apikey list|create NAME [--days N]|rm NAME ID | orgs
 
 ## وضعیت
 مسیرها و بدنهٔ درخواست‌ها طبق مستندات Dokploy است و روی پنل واقعی تست نشده. نامطمئن‌ترین بخش‌ها: ساختار `project.all`، پورت مانیتورینگ و `/metrics`، `user.getContainerMetrics`، مسیر دعوت عضو و ورود با رمز عبور. برای بررسی از `raw NAME GET PATH` استفاده کنید. دستور `go test ./...` یک تست با سرور ساختگی اجرا می‌کند.
+
+### PyPI
+هر انتشار، wheel های مخصوص هر پلتفرم (باینری Go + دستورهای `dokploytools` و `dpt`) را روی PyPI هم منتشر می‌کند: `pipx install dokploytools` (یا `uv tool install dokploytools`) و سپس `dpt`. به secret با نام `PYPI_API_TOKEN` در ریپو نیاز دارد؛ تگ باید با PEP 440 سازگار باشد (`v1.2.3`، نه `v1.2.3-beta`). ساخت wheel ها با `scripts/build_wheels.py` است (فقط کتابخانهٔ استاندارد).
