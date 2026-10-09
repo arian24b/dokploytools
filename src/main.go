@@ -14,27 +14,124 @@ var version = "dev"
 
 const usage = `dokploytools — manage multiple Dokploy panels
 
-Global: --json (machine output)  --watch SECS (repeat)   NAME omitted / "all" = every panel
+NAME omitted or "all" = every panel. PROJ/SVC = project name / service name.
 
-panels    panel add NAME URL (--key K | --user E --pass P) | list | edit NAME [--url --key] | rm NAME | encrypt
-          (env panels: DOKPLOY_<NAME>_URL + DOKPLOY_<NAME>_KEY; DOKPLOYTOOLS_PASSPHRASE encrypts keys at rest)
-overview  projects [NAME] | status [NAME] [--project P] | servers [NAME] [--check] | containers [NAME] [--stats]
-          deployments NAME PROJ/SVC | monitor [NAME] | update [NAME] [--check]
-          alert [NAME] [--cpu 90 --mem 90 --disk 90 --cert-days 14 --no-certs --webhook URL --telegram TOKEN@CHAT]
-services  svc start|stop|deploy|redeploy NAME PROJ/SVC [--env E --wait]
-          env NAME PROJ/SVC [set K=V.. | unset K.. | --file F]
-          deploy NAME --repo URL [--branch main --compose-path ./docker-compose.yml --project P --env production
-                --name N --set K=V --env-file F --domain H --service S --port N --server ID --ssh-key-id ID
-                --auto-deploy --no-deploy --wait]   (or --file compose.yml for an inline compose)
-backups   backup [NAME] [--dest D --keep N --download DIR --to-endpoint --to-bucket --to-access --to-secret --to-prefix]
-          dbbackup list|create|run|set|rm|files|download|copy NAME ...   (see README)
-domains   domains [NAME] | domain add NAME PROJ/SVC --host H --port N [--service S --cert letsencrypt|none|custom --no-https]
-          domain rm NAME HOST | domain check NAME [HOST]
-certs     cert list NAME | cert add NAME CERTNAME --cert F --key F [--domain H --auto-renew] | cert rm NAME ID|NAME
-traefik   traefik get NAME main|web|middleware | get NAME --path F | set NAME main|... --from FILE | ls NAME | reload NAME
-people    users [NAME] | member invite|rm|invitations|uninvite NAME ... | apikey list|create|rm NAME ... | orgs [NAME]
-other     raw NAME METHOD PATH [JSON]
+Common options (accepted by every command that has a matching purpose):
+	--json			machine-readable output (exit 1 if any panel failed)
+	--watch SECS		repeat the command every SECS seconds
+	--env E			environment of PROJ/SVC (default production)
+	--server ID		remote server id
+	--dest D		backup destination id or name
+	--search PREFIX		backup file prefix
+	--download DIR		download the backup file to DIR
+	--to-endpoint E, --to-bucket B, --to-access K, --to-secret S, --to-prefix P, --to-region R
+			copy backups to one central S3 bucket (as <prefix>/<panel>/<file>)
+	--keep N		keep the latest N backups
+	--schedule CRON		backup schedule
+	--prefix P		backup prefix
+	--wait			wait for the deployment to finish
+	--timeout SECS		wait limit
+	--check			report only, change nothing
+	--org ID		organization id
+	--service S		compose service name
+	--port N		container port
+	--no-https		serve over http only
+	--key KEY		panel API key
+	--user EMAIL --pass PASS
+			log in once and create an API key instead of --key
 
+Commands:
+panel add NAME URL
+panel list
+panel edit NAME
+	--url URL
+panel rm NAME
+panel encrypt	seal stored keys (needs DOKPLOYTOOLS_PASSPHRASE)
+projects [NAME]
+status [NAME]
+	--project P	only this project
+servers [NAME]
+containers [NAME]
+	--stats	CPU/memory per service (needs monitoring)
+deployments NAME PROJ/SVC
+	--limit N
+monitor [NAME]
+update [NAME]
+alert [NAME]
+	--cpu N		default 90
+	--mem N		default 90
+	--disk N		default 90
+	--cert-days N	default 14
+	--no-certs	skip TLS expiry checks
+	--webhook URL
+	--telegram TOKEN@CHATID
+	--require-metrics
+svc ACTION NAME PROJ/SVC	ACTION = start|stop|deploy|redeploy
+env NAME PROJ/SVC [set K=V.. | unset K..]
+	--file F	replace all variables from a file
+deploy NAME	deploy a compose app (creates project/env/service if missing)
+	--repo URL		git repository
+	--file F		local compose file instead of --repo
+	--branch B		default main
+	--compose-path P	default ./docker-compose.yml
+	--project P		default repo name
+	--name N		service name, default repo name
+	--set K=V		repeatable
+	--env-file F
+	--domain H		requires --service and --port
+	--ssh-key-id ID
+	--auto-deploy
+	--no-deploy
+backup [NAME]	panel (web-server) backup
+dbbackup create NAME PROJ/SVC
+	--database DB
+	--disabled
+dbbackup list NAME [PROJ/SVC]
+dbbackup run NAME PROJ/SVC
+	--id BACKUPID
+dbbackup set NAME BACKUPID
+	--enable true|false
+dbbackup rm NAME BACKUPID
+dbbackup files NAME
+dbbackup download NAME
+dbbackup copy NAME
+domains [NAME]
+domain add NAME PROJ/SVC
+	--host H
+	--path P
+	--cert letsencrypt|none|custom
+	--resolver NAME
+domain rm NAME HOST
+domain check NAME [HOST]
+cert list NAME
+cert add NAME CERTNAME
+	--cert FILE	fullchain.pem
+	--key FILE	privkey.pem
+	--domain H	verify the cert covers it
+	--auto-renew
+cert rm NAME ID|CERTNAME
+traefik get NAME main|web|middleware
+	--path FILE	read a file instead
+traefik set NAME main|web|middleware
+	--from FILE	new config (old one saved to a .bak file)
+	--path FILE	write a file instead
+traefik ls NAME
+traefik reload NAME
+users [NAME]
+member invite NAME EMAIL
+	--role member|admin
+member rm NAME USERID
+member invitations NAME
+member uninvite NAME INVITATIONID
+apikey list NAME
+apikey create NAME KEYNAME
+	--days N	expiry
+apikey rm NAME KEYID
+orgs [NAME]
+raw NAME METHOD PATH [JSON]	e.g. raw prod GET project.all
+version
+
+Environment: DOKPLOY_<NAME>_URL + DOKPLOY_<NAME>_KEY define a panel; DOKPLOYTOOLS_PASSPHRASE encrypts stored keys.
 Config: ~/.config/dokploytools/panels.json`
 
 func run(pos []string, f F) {
