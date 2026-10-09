@@ -21,3 +21,6 @@ Go CLI (package main; stdlib + `minio-go` for S3, `x/crypto/scrypt`) managing mu
 ## Gotchas
 - `go mod tidy` is slow (large minio-go tree); run it in the background.
 - Never commit the built binary or real API keys.
+
+## Commits & releases
+- Use conventional commits (`feat:`, `fix:`, `docs:`, `chore:`…): python-semantic-release derives the version from them (`semantic-release.toml`), so commit type = release type. Never hand-edit `CHANGELOG.md` or tag manually.

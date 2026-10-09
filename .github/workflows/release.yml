@@ -1,15 +1,66 @@
-name: release
-# Tag to release: git tag v1.2.3 && git push --tags
+name: Release
+
 on:
-  push:
-    tags: ["v*"]
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types:
+      - completed
+  workflow_dispatch:
+
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
 jobs:
   release:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.semrel.outputs.released }}
+      tag: ${{ steps.semrel.outputs.tag }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
+
+      - name: Set up UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: 3.14
+
+      - name: Configure Git
+        run: |
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@users.noreply.github.com
+
+      - name: Run semantic release
+        id: semrel
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          before=$(git tag --list 'v*' --sort=-v:refname | head -1)
+          uvx --from python-semantic-release==10.6.2 python-semantic-release version --changelog --tag
+          after=$(git tag --list 'v*' --sort=-v:refname | head -1)
+          echo "tag=$after" >> "$GITHUB_OUTPUT"
+          if [ "$before" != "$after" ]; then echo "released=true" >> "$GITHUB_OUTPUT"; else echo "released=false" >> "$GITHUB_OUTPUT"; fi
+
+  # Tags pushed with GITHUB_TOKEN don't trigger other workflows, so build + publish run here.
+  publish:
+    needs: release
+    if: ${{ needs.release.outputs.released == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ needs.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release.outputs.tag }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -19,19 +70,20 @@ jobs:
           mkdir dist
           for t in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64; do
             os=${t%/*}; arch=${t#*/}; ext=""; [ $os = windows ] && ext=.exe
-            CGO_ENABLED=0 GOOS=$os GOARCH=$arch go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME}" \
+            CGO_ENABLED=0 GOOS=$os GOARCH=$arch go build -trimpath -ldflags "-s -w -X main.version=${TAG}" \
               -o dist/dokploytools-$os-$arch$ext ./src
           done
           (cd dist && sha256sum * > checksums.txt)
       - name: build wheels
-        run: python3 scripts/build_wheels.py "${GITHUB_REF_NAME#v}" dist wheels
+        run: python3 scripts/build_wheels.py "${TAG#v}" dist wheels
       - name: smoke-test wheel
         run: |
           python3 -m venv /tmp/v && /tmp/v/bin/pip install --no-index --no-deps wheels/*manylinux_2_17_x86_64*.whl
-          /tmp/v/bin/dpt version | grep -F "$GITHUB_REF_NAME"
-      - run: gh release create "$GITHUB_REF_NAME" dist/* --generate-notes
+          /tmp/v/bin/dpt version | grep -F "$TAG"
+      - name: attach binaries to the GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$TAG" dist/* --clobber
       - name: publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:

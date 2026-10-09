@@ -1,0 +1,10 @@
+# Version comes from git tags only (Go project, no version file). Use conventional commits:
+# feat: -> minor, fix:/perf: -> patch, "!" or BREAKING CHANGE -> major (minor while 0.x).
+[semantic_release]
+tag_format = "v{version}"
+commit_parser = "conventional"
+allow_zero_version = true
+major_on_zero = false
+
+[semantic_release.branches.main]
+match = "(main|master)"
