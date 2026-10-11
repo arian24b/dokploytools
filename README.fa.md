@@ -23,7 +23,7 @@ panel list | panel edit NAME [--url U] [--key K] | panel rm NAME | panel encrypt
 ## نمای کلی
 ```
 projects | status [--project P] | servers [--check] | containers [--stats]
-deployments NAME PROJ/SVC | monitor | update [--check]
+deployments NAME PROJ/SVC | monitor | upgrade [--check]
 alert [--cpu 90 --mem 90 --disk 90 --cert-days 14 --no-certs --webhook URL --telegram TOKEN@CHATID]
 ```
 `alert` وقتی پنل از دسترس خارج باشد، سرویس/سرور در وضعیت خطا باشد، مصرف از حد بگذرد یا گواهی یک دامنهٔ HTTPS نزدیک انقضا باشد با کد ۱ خارج می‌شود؛ برای cron مناسب است.

@@ -22,7 +22,7 @@ panel list | panel edit NAME [--url U] [--key K] | panel rm NAME | panel encrypt
 ## Overview
 ```
 projects | status [--project P] | servers [--check] | containers [--stats]
-deployments NAME PROJ/SVC | monitor | update [--check]
+deployments NAME PROJ/SVC | monitor | upgrade [--check]
 alert [--cpu 90 --mem 90 --disk 90 --cert-days 14 --no-certs --webhook URL --telegram TOKEN@CHATID]
 ```
 `alert` exits 1 when the panel is down, a service/server is in error, a metric is over its limit or an HTTPS domain's cert is near expiry — put it in cron.
@@ -74,3 +74,16 @@ Endpoint paths and bodies follow the Dokploy docs reference. Untested against a 
 
 ### PyPI
 Each release also publishes platform wheels (the Go binary + `dokploytools`/`dpt` entry points) to PyPI: `pipx install dokploytools` (or `uv tool install dokploytools`), then run `dpt`. Needs the repo secret `PYPI_API_TOKEN`; versions are plain `X.Y.Z` (PEP 440). Wheels are built by `scripts/build_wheels.py` (stdlib only).
+
+## Common commands
+
+Same look and flags as the other arian24b CLIs:
+
+```bash
+dokploytools help [command]      # help (also -h/--help)
+dokploytools version             # version and git repo (also -v)
+dokploytools update [--check]    # self update (renamed: the old `update` that upgrades Dokploy panels is now `upgrade`)
+dokploytools -q ...              # quiet: no banners/notes (or DOKPLOYTOOLS_QUIET=1)
+```
+
+Missing positional arguments and keys are asked for on a TTY; in pipes/CI they fail with `<ARG> is required`.

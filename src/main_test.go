@@ -91,3 +91,19 @@ func TestDeployFlow(t *testing.T) {
 		t.Fatalf("project name %v", bodies["project.create"])
 	}
 }
+
+func TestHelpDocs(t *testing.T) {
+	seen := map[string]bool{}
+	for _, d := range docs {
+		if seen[d.name] {
+			t.Fatalf("duplicate doc %q", d.name)
+		}
+		seen[d.name] = true
+		if !hasPrefix(strings.Fields(d.name), strings.Fields(d.name)[:1]) {
+			t.Fatalf("prefix match broken for %q", d.name)
+		}
+	}
+	if got := colorJSON(obj{"a": []any{1.0, true, nil, "x"}}, 0); !strings.Contains(got, `"a"`) {
+		t.Fatalf("colorJSON lost data: %s", got)
+	}
+}
