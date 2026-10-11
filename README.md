@@ -9,6 +9,8 @@ go build -o dokploytools ./src
 ln -sf "$PWD/dokploytools" ~/.local/bin/dpt   # short alias: dpt (or: alias dpt=dokploytools)
 ```
 
+Or install the prebuilt binary from PyPI: `uv tool install dokploytools` (or `pipx install dokploytools`).
+
 Global flags: `--json` (machine-readable rows, exit 1 if any panel errored) and `--watch SECS` (repeat).
 
 ## Panels & config
@@ -77,13 +79,15 @@ Each release also publishes platform wheels (the Go binary + `dokploytools`/`dpt
 
 ## Common commands
 
-Same look and flags as the other arian24b CLIs:
+dokploytools is written in Go, but it follows the same conventions as the Python tools built on [cfuicli](https://github.com/arian24b/cfui): same colors, boxed errors and help layout.
 
 ```bash
-dokploytools help [command]      # help (also -h/--help)
-dokploytools version             # version and git repo (also -v)
-dokploytools update [--check]    # self update (renamed: the old `update` that upgrades Dokploy panels is now `upgrade`)
-dokploytools -q ...              # quiet: no banners/notes (or DOKPLOYTOOLS_QUIET=1)
+dokploytools help [command]      # help; -h works on any command
+dokploytools version             # version and git repository (also: -v)
+dokploytools update [--check]    # update the tool itself (uv or pipx install, or the release binary)
+dokploytools -q ...              # quiet: no banner or notes (or DOKPLOYTOOLS_QUIET=1)
 ```
 
-Missing positional arguments and keys are asked for on a TTY; in pipes/CI they fail with `<ARG> is required`.
+- A missing positional argument, `--key` or `--pass` is asked for in a terminal. In a pipe or in CI the command stops with `<ARG> is required`.
+- The old `update` (upgrade Dokploy on the panels) is now `upgrade`; `update` always means the tool itself.
+- `--json` output is colored only on a terminal. `NO_COLOR=1` turns color off.

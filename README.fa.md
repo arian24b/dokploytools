@@ -9,6 +9,8 @@ go build -o dokploytools ./src
 ln -sf "$PWD/dokploytools" ~/.local/bin/dpt   # نام کوتاه: dpt
 ```
 
+یا باینری آماده را از PyPI نصب کنید: `uv tool install dokploytools` (یا `pipx install dokploytools`).
+
 فلگ‌های عمومی: `--json` (خروجی ماشینی؛ اگر پنلی خطا بدهد کد خروج ۱ است) و `--watch SECS` (تکرار دستور).
 
 ## پنل‌ها و تنظیمات
@@ -75,3 +77,18 @@ apikey list|create NAME [--days N]|rm NAME ID | orgs
 
 ### PyPI
 هر انتشار، wheel های مخصوص هر پلتفرم (باینری Go + دستورهای `dokploytools` و `dpt`) را روی PyPI هم منتشر می‌کند: `pipx install dokploytools` (یا `uv tool install dokploytools`) و سپس `dpt`. به secret با نام `PYPI_API_TOKEN` در ریپو نیاز دارد؛ نسخه‌ها به‌صورت ساده `X.Y.Z` هستند (PEP 440). ساخت wheel ها با `scripts/build_wheels.py` است (فقط کتابخانهٔ استاندارد).
+
+## دستورهای مشترک
+
+dokploytools با Go نوشته شده، اما همان قراردادهای ابزارهای پایتونی ساخته‌شده روی [cfuicli](https://github.com/arian24b/cfui) را رعایت می‌کند: رنگ‌ها، کادر خطا و قالب راهنما یکی است.
+
+```bash
+dokploytools help [command]      # راهنما؛ -h روی هر دستور کار می‌کند
+dokploytools version             # نسخه و مخزن گیت (همچنین: -v)
+dokploytools update [--check]    # به‌روزرسانی خود ابزار (نصب با uv یا pipx، یا باینری release)
+dokploytools -q ...              # حالت آرام: بدون بنر و یادداشت (یا DOKPLOYTOOLS_QUIET=1)
+```
+
+- اگر آرگومان موضعی، `--key` یا `--pass` جا افتاده باشد، در ترمینال پرسیده می‌شود. در pipe یا CI دستور با پیام `<ARG> is required` متوقف می‌شود.
+- `update` قدیمی (ارتقای Dokploy روی پنل‌ها) حالا `upgrade` نام دارد؛ `update` همیشه یعنی خود ابزار.
+- خروجی `--json` فقط در ترمینال رنگی است. با `NO_COLOR=1` رنگ خاموش می‌شود.
