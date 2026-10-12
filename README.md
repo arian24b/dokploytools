@@ -9,6 +9,8 @@ go build -o dokploytools ./src
 ln -sf "$PWD/dokploytools" ~/.local/bin/dpt   # short alias: dpt (or: alias dpt=dokploytools)
 ```
 
+Or install the prebuilt binary from PyPI: `uv tool install dokploytools` (or `pipx install dokploytools`).
+
 Global flags: `--json` (machine-readable rows, exit 1 if any panel errored) and `--watch SECS` (repeat).
 
 ## Panels & config
@@ -22,7 +24,7 @@ panel list | panel edit NAME [--url U] [--key K] | panel rm NAME | panel encrypt
 ## Overview
 ```
 projects | status [--project P] | servers [--check] | containers [--stats]
-deployments NAME PROJ/SVC | monitor | update [--check]
+deployments NAME PROJ/SVC | monitor | upgrade [--check]
 alert [--cpu 90 --mem 90 --disk 90 --cert-days 14 --no-certs --webhook URL --telegram TOKEN@CHATID]
 ```
 `alert` exits 1 when the panel is down, a service/server is in error, a metric is over its limit or an HTTPS domain's cert is near expiry — put it in cron.
@@ -74,3 +76,18 @@ Endpoint paths and bodies follow the Dokploy docs reference. Untested against a 
 
 ### PyPI
 Each release also publishes platform wheels (the Go binary + `dokploytools`/`dpt` entry points) to PyPI: `pipx install dokploytools` (or `uv tool install dokploytools`), then run `dpt`. Needs the repo secret `PYPI_API_TOKEN`; versions are plain `X.Y.Z` (PEP 440). Wheels are built by `scripts/build_wheels.py` (stdlib only).
+
+## Common commands
+
+dokploytools is written in Go, but it follows the same conventions as the Python tools built on [cfuicli](https://github.com/arian24b/cfui): same colors, boxed errors and help layout.
+
+```bash
+dokploytools help [command]      # help; -h works on any command
+dokploytools version             # version and git repository (also: -v)
+dokploytools update [--check]    # update the tool itself (uv or pipx install, or the release binary)
+dokploytools -q ...              # quiet: no banner or notes (or DOKPLOYTOOLS_QUIET=1)
+```
+
+- A missing positional argument, `--key` or `--pass` is asked for in a terminal. In a pipe or in CI the command stops with `<ARG> is required`.
+- The old `update` (upgrade Dokploy on the panels) is now `upgrade`; `update` always means the tool itself.
+- `--json` output is colored only on a terminal. `NO_COLOR=1` turns color off.

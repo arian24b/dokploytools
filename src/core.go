@@ -40,8 +40,6 @@ var (
 	failed   bool
 )
 
-func die(f string, a ...any) { fmt.Fprintf(os.Stderr, "error: "+f+"\n", a...); os.Exit(1) }
-
 // ---- config: file (optionally AES-GCM sealed) + DOKPLOY_<NAME>_URL/_KEY env panels ----
 
 func seal(key string) string {
@@ -314,11 +312,17 @@ func table(rows [][]string) {
 		}
 		return
 	}
-	w := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
+	var buf bytes.Buffer
+	w := tabwriter.NewWriter(&buf, 0, 4, 2, ' ', 0)
 	for _, r := range rows {
 		fmt.Fprintln(w, strings.Join(r, "\t"))
 	}
 	w.Flush()
+	lines := strings.SplitAfterN(buf.String(), "\n", 2) // header row in muted, the rest as is
+	fmt.Print(paint("muted", strings.TrimRight(lines[0], "\n"), os.Stdout) + "\n")
+	if len(lines) > 1 {
+		fmt.Print(lines[1])
+	}
 }
 
 // done reports a one-line result (JSON: {"panel":..,"result":..}).
@@ -338,8 +342,7 @@ func flush() {
 	if jsonRows == nil {
 		jsonRows = []obj{}
 	}
-	b, _ := json.MarshalIndent(jsonRows, "", "  ")
-	fmt.Println(string(b))
+	printJSON(jsonRows)
 	jsonRows = nil
 }
 
@@ -348,14 +351,14 @@ func each(name string, fn func(Panel) error) {
 	for _, p := range pick(name) {
 		curPanel = p.Name
 		if !jsonOut {
-			fmt.Printf("\n== %s (%s)\n", p.Name, p.URL)
+			fmt.Printf("\n%s\n", paint("brand", bold(fmt.Sprintf("== %s (%s)", p.Name, p.URL), os.Stdout), os.Stdout))
 		}
 		if err := fn(p); err != nil {
 			failed = true
 			if jsonOut {
 				jsonRows = append(jsonRows, obj{"panel": p.Name, "error": err.Error()})
 			} else {
-				fmt.Println("  error:", err)
+				marker("error", "err", fmt.Sprintf("%s: %v", p.Name, err))
 			}
 		}
 	}
